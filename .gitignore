@@ -1,0 +1,5 @@
+.idea/libraries
+/target/
+/project/target/
+config
+/.idea/modules/
