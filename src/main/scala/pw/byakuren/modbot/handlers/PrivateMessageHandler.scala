@@ -3,7 +3,7 @@ package pw.byakuren.modbot.handlers
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import pw.byakuren.modbot.GuildDataManager
-import pw.byakuren.modbot.conversation.{Conversation, ConversationTracker}
+import pw.byakuren.modbot.conversation.ConversationTracker
 
 class PrivateMessageHandler(implicit tracker: ConversationTracker, guildDataManager: GuildDataManager) extends ListenerAdapter {
 

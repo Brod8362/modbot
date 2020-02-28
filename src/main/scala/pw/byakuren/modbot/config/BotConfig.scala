@@ -17,12 +17,13 @@ class BotConfig(val file: File) {
     var line = 0
     while (scanner.hasNextLine) {
       val data = scanner.nextLine().split("=", 2)
-      if (data.size<2) throw new RuntimeException(f"Invalid config file syntax at line $line")
+      if (data.size<2 || determineType(data(1))==DataType.Unknown) throw new RuntimeException(f"Invalid config file syntax at line $line")
       map.put(data(0), determineType(data(1)) match {
         case DataType.String => data(1).substring(1, data(1).length - 1)
         case DataType.Int => data(1).toInt
         case DataType.Float => data(1).toFloat
         case DataType.Long => data(1).substring(0, data(1).length - 1).toLong
+        case _ => None
       })
       line+=1
     }
@@ -32,7 +33,8 @@ class BotConfig(val file: File) {
     if (s.matches("\\d+L")) return DataType.Long
     if (s.matches("\\d+\\.\\d+")) return DataType.Float
     if (s.matches("\\d+")) return DataType.Int
-    DataType.String
+    if (s.matches("\".*\"")) return DataType.String
+    DataType.Unknown
   }
 
   override def toString: String = {

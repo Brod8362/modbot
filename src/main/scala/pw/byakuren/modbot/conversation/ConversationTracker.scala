@@ -30,4 +30,5 @@ class ConversationTracker(implicit guildDataManager: GuildDataManager) {
     c
   }
 
+
 }

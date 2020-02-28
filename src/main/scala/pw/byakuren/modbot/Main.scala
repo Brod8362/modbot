@@ -1,32 +1,29 @@
 package pw.byakuren.modbot
 
 import java.io.File
-import java.util.EventListener
 
 import net.dv8tion.jda.api.JDABuilder
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import pw.byakuren.modbot.commands.SetLogChannel
+import pw.byakuren.modbot.commands.{SetLogChannel, ViewChatQueue}
 import pw.byakuren.modbot.config.BotConfig
 import pw.byakuren.modbot.conversation.ConversationTracker
+import pw.byakuren.modbot.database.SQLConnection
 import pw.byakuren.modbot.handlers.PrivateMessageHandler
 import pw.byakuren.modbot.util.Utilities._
 
 object Main extends ListenerAdapter {
 
+  val sql = new SQLConnection
   val config = new BotConfig(new File("config"))
   val prefix: String = config.getString("prefix").get
 
   implicit val guildDataManager: GuildDataManager = new GuildDataManager
   implicit val conversationTracker: ConversationTracker = new ConversationTracker
 
-  val commandRegistry = new CommandRegistry(Set(new SetLogChannel()))
+  val commandRegistry = new CommandRegistry(Set(new SetLogChannel(), new ViewChatQueue()))
 
   def main(args: Array[String]): Unit = {
-
-
-
     val jda = config.getString("token") match {
       case Some(token) =>
         new JDABuilder(token).addEventListeners(

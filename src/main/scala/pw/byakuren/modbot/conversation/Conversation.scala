@@ -23,7 +23,7 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager) 
   }
 
   def handleMessage(message: Message): Unit = {
-    if (message.getContentRaw=="end") {
+    if (message.getContentRaw == "end") {
       complete()
       return
     }
@@ -40,23 +40,38 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager) 
           case _ =>
             message.reply(f"Please reply with a number 1 to ${sharedGuilds.size}")
         }
-      case _ => {
+      case ConversationState.Waiting =>
+        message.reply("You're currently in the queue. Please wait. Anything said now is not logged, and the moderators will not be able" +
+          " to see it.")
+      case _ =>
         addMessage(message)
-        guildDataManager(guildOption.get).logChannel match {
-          case Some(channel) =>
-            channel.sendMessage(message).queue()
-          case _ =>
-        }
-      }
+        if (!message.getAuthor.equals(message.getJDA.getSelfUser))
+          sendGuildMessage(f"[${message.getAuthor.getAsMention}] ${message.getContentRaw}")
     }
   }
 
   def setGuild(newGuild: Guild): Unit = {
     guildOption = Some(newGuild)
+    state = ConversationState.Waiting
+    val pos = guildDataManager(newGuild).addToQueue(this)
+    if (pos == 0) {
+      start()
+    } else {
+      sendGuildMessage(f"`==>` ${user.getAsMention} `has entered the queue.`")
+      user.openPrivateChannel().complete()
+        .sendMessage("There are other people talking to the moderators right now, you will be put into the queue.")
+        .queue()
+      alertPosition(pos)
+    }
+  }
+
+  def start(): Unit = {
+    val g = guildOption.get
     user.openPrivateChannel().complete().sendMessage(
-      f"You are now messaging the moderators of ${newGuild.getName} directly. " +
+      f"You are now messaging the moderators of ${g.getName} directly. " +
         f"A log of this conversation will be recorded and sent to the moderators. The moderators can reply anonymously " +
         f"through this bot, but may or may not choose to identify themselves. To end the conversation, say `end`").queue()
+    sendGuildMessage(f"`==>` ${user.getAsMention} `has entered the chat.`")
     state = ConversationState.InProgress
   }
 
@@ -73,13 +88,31 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager) 
       f"The conversation has conlcuded and ${messages.size} messages have been recorded. You may access the log " +
         f"again at anytime by running the command (TBD)"
     ).queue()
+    sendGuildMessage(f"`==>` ${user.getAsMention} `has ended their chat.`")
+    for (conversation <- guildDataManager(guildOption.get).nextConversationInQueue()) {
+      conversation.start()
+    }
     messages.result()
   }
 
   private def makeServerListString(servers: Seq[Guild]): String = {
     val a = for (i <- servers.indices) yield {
-      f"${i+1}: ${servers(i).getName}"
+      f"${i + 1}: ${servers(i).getName}"
     }
     a.mkString("\n")
+  }
+
+  /**
+   * Send an alert to a waiting conversation about it's new position.
+   *
+   * @param pos The position of the conversation, with 1 being next in line.
+   */
+  def alertPosition(pos: Int): Unit = {
+    user.openPrivateChannel().complete().sendMessage(f"You are now ${if (pos == 1) "next" else f"`${pos + 1}`"} in line.").queue()
+  }
+
+  private def sendGuildMessage(string: String): Unit = {
+    for (logChannel <- guildDataManager(guildOption.get).logChannel)
+      logChannel.sendMessage(string).queue()
   }
 }
