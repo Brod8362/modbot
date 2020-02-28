@@ -1,12 +1,20 @@
 package pw.byakuren.modbot
 
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
+import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 
 import scala.collection.mutable
+import scala.jdk.CollectionConverters._
 
-class GuildDataManager {
+class GuildDataManager extends SQLWritable {
 
   private val dataMap = new mutable.HashMap[Guild, GuildData]
+
+  def loadGuilds(jda: JDA, SQLConnection: SQLConnection): Unit = {
+    for (guild <- jda.getGuilds.asScala)
+      dataMap.put(guild, loadGuildData(guild, SQLConnection))
+  }
 
   def apply(guild: Guild): GuildData = {
     dataMap.get(guild) match {
@@ -15,5 +23,13 @@ class GuildDataManager {
       case _ =>
     }
     dataMap(guild)
+  }
+
+  def loadGuildData(guild: Guild, sql: SQLConnection): GuildData = {
+    new GuildData(guild, sql.getGuildLogChannel(guild), None)
+  }
+
+  override def write(SQLConnection: SQLConnection): Boolean = {
+    dataMap.values.forall(_.write(SQLConnection))
   }
 }

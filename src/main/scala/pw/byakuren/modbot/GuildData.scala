@@ -1,13 +1,14 @@
 package pw.byakuren.modbot
 
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.{Guild, Member, MessageChannel, Role}
+import net.dv8tion.jda.api.entities.{Guild, Member, MessageChannel, Role, TextChannel}
 import pw.byakuren.modbot.conversation.Conversation
+import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 
-import scala.collection.immutable.Queue
 import scala.collection.mutable
 
-class GuildData(val server: Guild, var logChannel: Option[MessageChannel], var moderatorRole: Option[Role] = None) {
+class GuildData(val server: Guild, var logChannel: Option[TextChannel], var moderatorRole: Option[Role] = None)
+  extends SQLWritable {
 
   private val conversationQueue = new mutable.Queue[Conversation]
 
@@ -47,4 +48,7 @@ class GuildData(val server: Guild, var logChannel: Option[MessageChannel], var m
     conversationQueue.clone().toSeq
   }
 
+  override def write(SQLConnection: SQLConnection): Boolean = {
+    logChannel.map(SQLConnection.setGuildLogChannel).get
+  }
 }
