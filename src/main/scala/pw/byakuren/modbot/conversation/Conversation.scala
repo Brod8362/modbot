@@ -1,12 +1,13 @@
 package pw.byakuren.modbot.conversation
 
 import net.dv8tion.jda.api.entities.{Guild, Message, User}
+import pw.byakuren.modbot.GuildDataManager
 
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import pw.byakuren.modbot.util.Utilities._
 
-class Conversation(val user: User) {
+class Conversation(val user: User)(implicit guildDataManager: GuildDataManager) {
 
   private var state = ConversationState.Init
   private val messages = new mutable.ListBuffer[Message]
@@ -39,7 +40,14 @@ class Conversation(val user: User) {
           case _ =>
             message.reply(f"Please reply with a number 1 to ${sharedGuilds.size}")
         }
-      case _ => addMessage(message)
+      case _ => {
+        addMessage(message)
+        guildDataManager(guildOption.get).logChannel match {
+          case Some(channel) =>
+            channel.sendMessage(message).queue()
+          case _ =>
+        }
+      }
     }
   }
 

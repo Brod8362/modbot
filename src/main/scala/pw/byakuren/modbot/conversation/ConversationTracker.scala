@@ -1,10 +1,11 @@
 package pw.byakuren.modbot.conversation
 
 import net.dv8tion.jda.api.entities.{Guild, User}
+import pw.byakuren.modbot.GuildDataManager
 
 import scala.collection.mutable
 
-class ConversationTracker() {
+class ConversationTracker(implicit guildDataManager: GuildDataManager) {
 
   private val ongoing = new mutable.HashMap[Long, Conversation]
   private val completed = new mutable.HashSet[Conversation]()
