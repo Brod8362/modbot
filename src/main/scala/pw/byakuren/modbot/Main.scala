@@ -7,11 +7,11 @@ import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.{JDA, JDABuilder}
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import pw.byakuren.modbot.commands.{Command, CommandPermission, SetLogChannel, ViewChatQueue}
+import pw.byakuren.modbot.commands.{Command, CommandPermission, ConversationList, SetLogChannel, ViewChatQueue}
 import pw.byakuren.modbot.config.BotConfig
 import pw.byakuren.modbot.conversation.ConversationTracker
 import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
-import pw.byakuren.modbot.handlers.PrivateMessageHandler
+import pw.byakuren.modbot.handlers.{ConversationReplyHandler, PrivateMessageHandler}
 import pw.byakuren.modbot.util.Utilities._
 
 object Main extends ListenerAdapter {
@@ -32,17 +32,19 @@ object Main extends ListenerAdapter {
 
   val commandRegistry = new CommandRegistry(Set(new SetLogChannel(),
     new ViewChatQueue(),
-    stopCommand)
+    stopCommand,
+    new ConversationList())
   )
 
-  val sqlWritable: Seq[SQLWritable] = Seq(guildDataManager)
+  val sqlWritable: Seq[SQLWritable] = Seq(guildDataManager, conversationTracker)
 
   def main(args: Array[String]): Unit = {
     val jda = config.getString("token") match {
       case Some(token) =>
         new JDABuilder(token).addEventListeners(
           this,
-          new PrivateMessageHandler
+          new PrivateMessageHandler,
+          new ConversationReplyHandler(prefix)
         ).build()
       case None =>
         throw new RuntimeException("Token not found, check config file")
@@ -68,7 +70,13 @@ object Main extends ListenerAdapter {
   }
 
   def shutdown(jda: JDA): Unit = {
-    sqlWritable.forall(_.write(sql))
+    for (writable <- sqlWritable) {
+      try {
+        writable.write(sql)
+      } catch {
+        case e:Exception => e.printStackTrace()
+      }
+    }
     jda.shutdown()
   }
 }

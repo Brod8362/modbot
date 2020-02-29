@@ -1,18 +1,25 @@
 package pw.byakuren.modbot.conversation
 
+import java.sql.Time
+import java.time.LocalTime
+import java.util.UUID
+
 import net.dv8tion.jda.api.entities.{Guild, Message, User}
 import pw.byakuren.modbot.GuildDataManager
+import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import pw.byakuren.modbot.util.Utilities._
 
-class Conversation(val user: User)(implicit guildDataManager: GuildDataManager) {
+class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, completeCallback: Conversation => Unit)  extends SQLWritable {
 
   private var state = ConversationState.Init
   private val messages = new mutable.ListBuffer[Message]
   private val sharedGuilds = user.getMutualGuilds.asScala
   private var guildOption: Option[Guild] = None
+  val uuid = UUID.randomUUID()
+  val time = Time.valueOf(LocalTime.now())
 
   def getState: ConversationState.Value = state
 
@@ -88,10 +95,11 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager) 
       f"The conversation has conlcuded and ${messages.size} messages have been recorded. You may access the log " +
         f"again at anytime by running the command (TBD)"
     ).queue()
-    sendGuildMessage(f"`==>` ${user.getAsMention} `has ended their chat.`")
+    sendGuildMessage(f"`==>` ${user.getAsMention} `has ended their chat.`\n`ID:${uuid.toString.substring(0,8)}\nMessages:${messageLog.size}`")
     for (conversation <- guildDataManager(guildOption.get).nextConversationInQueue()) {
       conversation.start()
     }
+    completeCallback(this)
     messages.result()
   }
 
@@ -115,4 +123,17 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager) 
     for (logChannel <- guildDataManager(guildOption.get).logChannel)
       logChannel.sendMessage(string).queue()
   }
+
+  def sendReply(message: Message): Unit = {
+    user.openPrivateChannel().complete().sendMessage(f"> ${message.getContentRaw}").queue()
+    messages.addOne(message)
+  }
+
+  def messageLog: Seq[Message] = messages.toSeq
+
+  override def write(SQLConnection: SQLConnection): Boolean = {
+    SQLConnection.writeConversation(this) > 0
+  }
+
+  def getGuild: Option[Guild] = guildOption
 }

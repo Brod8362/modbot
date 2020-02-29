@@ -1,11 +1,12 @@
 package pw.byakuren.modbot.conversation
 
-import net.dv8tion.jda.api.entities.{Guild, User}
+import net.dv8tion.jda.api.entities.User
 import pw.byakuren.modbot.GuildDataManager
+import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 
 import scala.collection.mutable
 
-class ConversationTracker(implicit guildDataManager: GuildDataManager) {
+class ConversationTracker(implicit guildDataManager: GuildDataManager) extends SQLWritable {
 
   private val ongoing = new mutable.HashMap[Long, Conversation]
   private val completed = new mutable.HashSet[Conversation]()
@@ -30,5 +31,18 @@ class ConversationTracker(implicit guildDataManager: GuildDataManager) {
     c
   }
 
+  override def write(SQLConnection: SQLConnection): Boolean = {
+    ongoing.values.filter(_.getState==ConversationState.Closed)
+    val r = completed.forall(_.write(SQLConnection))
+    completed.clear()
+    r
+  }
 
+  implicit def completeCallback(conversation: Conversation): Unit = {
+    ongoing.remove(conversation.user.getIdLong) match {
+      case Some(x) =>
+        completed.add(x)
+      case _ =>
+    }
+  }
 }

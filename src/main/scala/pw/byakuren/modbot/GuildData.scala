@@ -1,7 +1,10 @@
 package pw.byakuren.modbot
 
+import java.sql.Date
+import java.util.UUID
+
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.{Guild, Member, MessageChannel, Role, TextChannel}
+import net.dv8tion.jda.api.entities._
 import pw.byakuren.modbot.conversation.Conversation
 import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 
@@ -48,7 +51,12 @@ class GuildData(val server: Guild, var logChannel: Option[TextChannel], var mode
     conversationQueue.clone().toSeq
   }
 
+  def getPreviousConversations(SQLConnection: SQLConnection): Set[(UUID, Date, User)] = {
+    SQLConnection.getGuildPreviousConversations(server)
+  }
+
   override def write(SQLConnection: SQLConnection): Boolean = {
-    logChannel.map(SQLConnection.setGuildLogChannel).get
+    logChannel.map(SQLConnection.setGuildLogChannel)
+    true //todo debug?
   }
 }
