@@ -10,7 +10,7 @@ import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 
 import scala.collection.mutable
 
-class GuildData(val server: Guild, var logChannel: Option[TextChannel], var moderatorRole: Option[Role] = None)
+class GuildData(val server: Guild, val guildSettings: GuildSettings, var logChannel: Option[TextChannel], var moderatorRole: Option[Role] = None)
   extends SQLWritable {
 
   private val conversationQueue = new mutable.Queue[Conversation]

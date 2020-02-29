@@ -19,14 +19,17 @@ class GuildDataManager extends SQLWritable {
   def apply(guild: Guild): GuildData = {
     dataMap.get(guild) match {
       case None =>
-        dataMap.put(guild, new GuildData(guild, None, None))
+        dataMap.put(guild, new GuildData(guild, new GuildSettings(guild, 0), None, None))
       case _ =>
     }
     dataMap(guild)
   }
 
   def loadGuildData(guild: Guild, sql: SQLConnection): GuildData = {
-    new GuildData(guild, sql.getGuildLogChannel(guild), None)
+
+    new GuildData(guild, sql.getGuildSettings(guild).getOrElse(new GuildSettings(guild, 0)),
+      sql.getGuildLogChannel(guild),
+      None)
   }
 
   override def write(SQLConnection: SQLConnection): Unit = {

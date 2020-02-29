@@ -9,6 +9,6 @@ abstract class Command(names: Seq[String], val description: String, val permissi
 
   def aliases: Seq[String] = names
 
-  def run(message: Message, args: Seq[String]): Unit = ???
+  def run(message: Message, args: Seq[String]): Unit
 
 }

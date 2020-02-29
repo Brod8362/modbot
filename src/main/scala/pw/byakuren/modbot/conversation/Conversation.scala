@@ -38,7 +38,7 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
       case ConversationState.Init =>
         state = ConversationState.ServerInit
         message.reply(f"You are in multiple servers that use this bot. Please pick which server you would like" +
-          s" to contact.\n ${makeServerListString(sharedGuilds.toSeq)}")
+          s" to contact.\n ${makeServerListString(sharedGuilds.filter(_.logChannel.isDefined).toSeq)}")
       case ConversationState.ServerInit =>
         //Waiting for a reply that's a number.
         message.getContentRaw.toIntOption match {
@@ -60,7 +60,7 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
   def setGuild(newGuild: Guild): Unit = {
     guildOption = Some(newGuild)
     state = ConversationState.Waiting
-    val pos = guildDataManager(newGuild).addToQueue(this)
+    val pos = newGuild.getData.addToQueue(this)
     if (pos == 0) {
       start()
     } else {
@@ -95,8 +95,8 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
       f"The conversation has conlcuded and ${messages.size} messages have been recorded. You may access the log " +
         f"again at anytime by running the command (TBD)"
     ).queue()
-    sendGuildMessage(f"`==>` ${user.getAsMention} `has ended their chat.`\n`ID:${uuid.toString.substring(0,8)}\nMessages:${messageLog.size}`")
-    for (conversation <- guildDataManager(guildOption.get).nextConversationInQueue()) {
+    sendGuildMessage(f"`==>` ${user.getAsMention} `'s chat has ended.`\n`ID:${uuid.toString.substring(0,8)}\nMessages:${messageLog.size}`")
+    for (conversation <- guildOption.get.getData.nextConversationInQueue()) {
       conversation.start()
     }
     completeCallback(this)
@@ -116,11 +116,11 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
    * @param pos The position of the conversation, with 1 being next in line.
    */
   def alertPosition(pos: Int): Unit = {
-    user.openPrivateChannel().complete().sendMessage(f"You are now ${if (pos == 1) "next" else f"`${pos + 1}`"} in line.").queue()
+    user.openPrivateChannel().complete().sendMessage(f"You are now ${pos.toPositionString} in line.").queue()
   }
 
   private def sendGuildMessage(string: String): Unit = {
-    for (logChannel <- guildDataManager(guildOption.get).logChannel)
+    for (guild <- guildOption; logChannel <- guild.getData.logChannel)
       logChannel.sendMessage(string).queue()
   }
 

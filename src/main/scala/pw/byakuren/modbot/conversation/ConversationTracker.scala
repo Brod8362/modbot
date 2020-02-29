@@ -32,10 +32,8 @@ class ConversationTracker(implicit guildDataManager: GuildDataManager) extends S
   }
 
   override def write(SQLConnection: SQLConnection): Unit = {
-    ongoing.values.filter(_.getState==ConversationState.Closed)
-    val r = completed.foreach(_.write(SQLConnection))
+    completed.foreach(_.write(SQLConnection))
     completed.clear()
-    r
   }
 
   implicit def completeCallback(conversation: Conversation): Unit = {
