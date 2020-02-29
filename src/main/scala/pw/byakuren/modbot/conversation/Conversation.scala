@@ -20,6 +20,7 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
   private var guildOption: Option[Guild] = None
   val uuid = UUID.randomUUID()
   val time = Time.valueOf(LocalTime.now())
+  var commandAlertFlag = false //this is set true on the first instance of a command being run on the moderator's side.
 
   def getState: ConversationState.Value = state
 
