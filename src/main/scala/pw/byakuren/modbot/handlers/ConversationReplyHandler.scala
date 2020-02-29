@@ -11,7 +11,7 @@ class ConversationReplyHandler(prefix: String)(implicit guildDataManager: GuildD
   private val ghostEmoji = "\uD83D\uDC7B"
 
   override def onGuildMessageReceived(event: GuildMessageReceivedEvent): Unit = {
-    val command = event.getMessage.getContentRaw.matches("\\W.*") //generic matcher for bot commands. not foolproof
+    val command = event.getMessage.getContentRaw.matches("[a-zA-Z]?[!$%^&.,>\\[\\]{}|\\\\]([a-zA-Z].*\\s?)*") //generic matcher for bot commands. not foolproof
     guildDataManager(event.getGuild).logChannel match {
       case Some(channel) if channel == event.getChannel =>
         guildDataManager(event.getGuild).activeConversation match {
