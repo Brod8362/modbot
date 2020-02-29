@@ -1,7 +1,7 @@
 package pw.byakuren.modbot.commands
 
 import net.dv8tion.jda.api.entities.Message
-import pw.byakuren.modbot.{GuildData, GuildDataManager}
+import pw.byakuren.modbot.guild.GuildDataManager
 import pw.byakuren.modbot.util.Utilities._
 
 class SetLogChannel(implicit data: GuildDataManager) extends

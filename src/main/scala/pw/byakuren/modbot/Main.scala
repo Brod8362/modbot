@@ -12,6 +12,7 @@ import pw.byakuren.modbot.commands.{Command, CommandPermission, ConversationList
 import pw.byakuren.modbot.config.BotConfig
 import pw.byakuren.modbot.conversation.ConversationTracker
 import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
+import pw.byakuren.modbot.guild.GuildDataManager
 import pw.byakuren.modbot.handlers.{ConversationReplyHandler, PrivateMessageHandler}
 import pw.byakuren.modbot.util.Utilities._
 

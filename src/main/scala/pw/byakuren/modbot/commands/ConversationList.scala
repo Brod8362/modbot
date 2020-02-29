@@ -1,7 +1,7 @@
 package pw.byakuren.modbot.commands
 import net.dv8tion.jda.api.entities.Message
-import pw.byakuren.modbot.GuildDataManager
 import pw.byakuren.modbot.database.SQLConnection
+import pw.byakuren.modbot.guild.GuildDataManager
 import pw.byakuren.modbot.util.Utilities._
 
 class ConversationList(implicit guildDataManager: GuildDataManager, SQLConnection: SQLConnection) extends

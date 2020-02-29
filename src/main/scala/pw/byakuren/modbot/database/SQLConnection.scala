@@ -1,11 +1,11 @@
 package pw.byakuren.modbot.database
 
-import java.io.{File, FileNotFoundException}
 import java.sql.Date
 import java.util.UUID
 
 import net.dv8tion.jda.api.entities.{Guild, TextChannel, User}
 import pw.byakuren.modbot.conversation.Conversation
+import pw.byakuren.modbot.guild.GuildSettings
 import scalikejdbc._
 
 class SQLConnection {
@@ -18,6 +18,7 @@ class SQLConnection {
   sql"""CREATE TABLE IF NOT EXISTS conversation_log (uuid STRING NOT NULL, guild INTEGER NOT NULL, user_id INTEGER NOT NULL,
     timestamp DATETIME NOT NULL, message_index INTEGER NOT NULL, message_author INTEGER NOT NULL, content STRING,
     PRIMARY KEY(uuid, message_index))""".execute().apply()
+  sql"CREATE TABLE IF NOT EXISTS guild_settings (guild INTEGER PRIMARY KEY NOT NULL, bitfield NOT NULL)".execute().apply()
 
   def setGuildLogChannel(channel: TextChannel): Boolean = {
     sql"INSERT OR REPLACE INTO log_channel VALUES (${channel.getGuild.getIdLong}, ${channel.getIdLong})".execute().apply()
@@ -49,5 +50,19 @@ class SQLConnection {
       .apply()
       .map(t => (UUID.fromString(t._1), t._2, guild.getJDA.getUserById(t._3)))
       .toSet
+  }
+
+  def writeGuildSettings(guildSettings: GuildSettings): Unit = {
+    sql"INSERT OR REPLACE INTO guild_settings VALUES (${guildSettings.guild.getIdLong}, ${guildSettings.value}"
+      .execute()
+      .apply()
+  }
+
+  def getGuildSettings(guild: Guild): Option[GuildSettings] = {
+    sql"SELECT bitfield FROM guild_settings WHERE guild=${guild.getIdLong}"
+      .map(_.int("bitfield")).single().apply() match {
+      case Some(bf) => Some(new GuildSettings(guild, bf))
+      case _ => None
+    }
   }
 }

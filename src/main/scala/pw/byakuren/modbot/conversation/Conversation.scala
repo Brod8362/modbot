@@ -5,8 +5,8 @@ import java.time.LocalTime
 import java.util.UUID
 
 import net.dv8tion.jda.api.entities.{Guild, Message, User}
-import pw.byakuren.modbot.GuildDataManager
 import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
+import pw.byakuren.modbot.guild.GuildDataManager
 
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
@@ -131,7 +131,7 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
 
   def messageLog: Seq[Message] = messages.toSeq
 
-  override def write(SQLConnection: SQLConnection): Boolean = {
+  override def write(SQLConnection: SQLConnection): Unit = {
     SQLConnection.writeConversation(this) > 0
   }
 

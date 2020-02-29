@@ -1,8 +1,8 @@
 package pw.byakuren.modbot.conversation
 
 import net.dv8tion.jda.api.entities.User
-import pw.byakuren.modbot.GuildDataManager
 import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
+import pw.byakuren.modbot.guild.GuildDataManager
 
 import scala.collection.mutable
 
@@ -31,9 +31,9 @@ class ConversationTracker(implicit guildDataManager: GuildDataManager) extends S
     c
   }
 
-  override def write(SQLConnection: SQLConnection): Boolean = {
+  override def write(SQLConnection: SQLConnection): Unit = {
     ongoing.values.filter(_.getState==ConversationState.Closed)
-    val r = completed.forall(_.write(SQLConnection))
+    val r = completed.foreach(_.write(SQLConnection))
     completed.clear()
     r
   }

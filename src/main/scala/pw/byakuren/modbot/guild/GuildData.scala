@@ -1,4 +1,4 @@
-package pw.byakuren.modbot
+package pw.byakuren.modbot.guild
 
 import java.sql.Date
 import java.util.UUID
@@ -55,8 +55,7 @@ class GuildData(val server: Guild, var logChannel: Option[TextChannel], var mode
     SQLConnection.getGuildPreviousConversations(server)
   }
 
-  override def write(SQLConnection: SQLConnection): Boolean = {
+  override def write(SQLConnection: SQLConnection): Unit = {
     logChannel.map(SQLConnection.setGuildLogChannel)
-    true //todo debug?
   }
 }

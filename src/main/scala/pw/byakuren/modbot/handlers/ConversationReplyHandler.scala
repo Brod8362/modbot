@@ -2,8 +2,8 @@ package pw.byakuren.modbot.handlers
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import pw.byakuren.modbot.GuildDataManager
 import pw.byakuren.modbot.conversation.ConversationTracker
+import pw.byakuren.modbot.guild.GuildDataManager
 import pw.byakuren.modbot.util.Utilities._
 
 class ConversationReplyHandler(prefix: String)(implicit guildDataManager: GuildDataManager, conversationTracker: ConversationTracker) extends ListenerAdapter {

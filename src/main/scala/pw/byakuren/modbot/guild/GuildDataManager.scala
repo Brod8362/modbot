@@ -1,4 +1,4 @@
-package pw.byakuren.modbot
+package pw.byakuren.modbot.guild
 
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
@@ -29,7 +29,7 @@ class GuildDataManager extends SQLWritable {
     new GuildData(guild, sql.getGuildLogChannel(guild), None)
   }
 
-  override def write(SQLConnection: SQLConnection): Boolean = {
-    dataMap.values.forall(_.write(SQLConnection))
+  override def write(SQLConnection: SQLConnection): Unit = {
+    dataMap.values.foreach(_.write(SQLConnection))
   }
 }
