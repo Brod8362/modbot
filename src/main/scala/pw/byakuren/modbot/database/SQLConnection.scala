@@ -34,7 +34,7 @@ class SQLConnection {
 
   def writeConversation(conversation: Conversation): Int = {
     val messageLog = conversation.messageLog
-    val batchParams = messageLog.map(m => Seq(conversation.uuid, conversation.getGuild.get,conversation.user.getIdLong, conversation.time,
+    val batchParams = messageLog.map(m => Seq(conversation.uuid, conversation.getGuild.get.getIdLong ,conversation.user.getIdLong, conversation.time,
       messageLog.indexOf(m), m.getAuthor.getIdLong, m.getContentRaw))
     DB localTx { implicit session =>
       sql"INSERT INTO conversation_log VALUES (?,?,?,?,?,?,?)".batch(batchParams: _*).apply()
