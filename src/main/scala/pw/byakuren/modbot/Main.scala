@@ -77,10 +77,7 @@ object Main extends ListenerAdapter {
     for (owner <- ownerOption) {
       if (member.getIdLong==owner.getIdLong) return CommandPermission.Debug
     }
-    for (role <- guildDataManager(member.getGuild).moderatorRole) {
-      if (member.getRoles.contains(role)) return CommandPermission.Admins
-    }
-    if (member.hasPermission(Permission.ADMINISTRATOR)) return CommandPermission.Admins
+    if (member.isGuildModerator) CommandPermission.Admins
     CommandPermission.Everybody
   }
 

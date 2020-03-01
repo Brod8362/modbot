@@ -47,5 +47,9 @@ object Utilities {
         case _ => f"> $name"
       }
     }
+    def isGuildModerator(implicit guildDataManager: GuildDataManager): Boolean = {
+      member.getGuild.getData.moderatorRole.exists(member.getRoles.contains(_)) ||
+        member.getPermissions.contains(Permission.ADMINISTRATOR)
+    }
   }
 }
