@@ -3,7 +3,7 @@ package pw.byakuren.modbot.commands
 import net.dv8tion.jda.api.entities.Message
 import pw.byakuren.modbot.commands.CommandPermission.CommandPermission
 
-abstract class Command(names: Seq[String], val description: String, val permissionLevel: CommandPermission) {
+abstract class Command(names: Seq[String], val description: String, val syntax: String) {
 
   def name: String = aliases.head
 

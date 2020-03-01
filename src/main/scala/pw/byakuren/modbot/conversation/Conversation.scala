@@ -5,6 +5,7 @@ import java.time.LocalTime
 import java.util.UUID
 
 import net.dv8tion.jda.api.entities.{Guild, Member, Message, User}
+import pw.byakuren.modbot.Main
 import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 import pw.byakuren.modbot.guild.GuildDataManager
 
@@ -36,6 +37,7 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
       complete()
       return
     }
+    if (message.getContentRaw.startsWith(Main.prefix)) return
     state match {
       case ConversationState.Init =>
         state = ConversationState.ServerInit

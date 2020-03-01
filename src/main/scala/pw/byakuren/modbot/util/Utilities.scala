@@ -2,6 +2,7 @@ package pw.byakuren.modbot.util
 
 import net.dv8tion.jda.api.{OnlineStatus, Permission}
 import net.dv8tion.jda.api.entities.{Guild, Member, Message, Role, TextChannel, User}
+import pw.byakuren.modbot.conversation.ConversationTracker
 import pw.byakuren.modbot.guild.{GuildData, GuildDataManager, GuildSettings}
 
 import scala.jdk.CollectionConverters._
@@ -9,7 +10,7 @@ import scala.jdk.CollectionConverters._
 object Utilities {
   implicit class MessageUtils(message: Message) {
     def reply(replyText: String): Unit = {
-      message.getChannel.sendMessage(replyText).queue()
+      message.getChannel.sendMessage(replyText.substring(0, replyText.length min 2000)).queue()
     }
     def translateMentions(from: User, to: User): String = {
       message.getContentRaw.replace(from.getAsMention, to.getAsMention)
@@ -50,6 +51,11 @@ object Utilities {
     def isGuildModerator(implicit guildDataManager: GuildDataManager): Boolean = {
       member.getGuild.getData.moderatorRole.exists(member.getRoles.contains(_)) ||
         member.getPermissions.contains(Permission.ADMINISTRATOR)
+    }
+  }
+  implicit class UserUtils(user: User) {
+    def hasActiveConversation(implicit conversationTracker: ConversationTracker): Boolean = {
+      conversationTracker(user.getIdLong).isDefined
     }
   }
 }

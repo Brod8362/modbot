@@ -5,7 +5,7 @@ import pw.byakuren.modbot.guild.GuildDataManager
 import pw.byakuren.modbot.util.Utilities._
 
 class ConversationList(implicit guildDataManager: GuildDataManager, SQLConnection: SQLConnection) extends
-  Command(Seq("conv"), "See previous conversations.", CommandPermission.Admins) {
+  GuildCommand(Seq("conv"), "See previous conversations.", "", CommandPermission.Admins) {
   override def run(message: Message, args: Seq[String]): Unit = {
     val previous = guildDataManager(message.getGuild).getPreviousConversations(SQLConnection)
     if (previous.nonEmpty)

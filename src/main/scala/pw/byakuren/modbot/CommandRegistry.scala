@@ -4,15 +4,15 @@ import pw.byakuren.modbot.commands.Command
 
 import scala.collection.mutable
 
-class CommandRegistry(val commands: Set[Command]) {
+class CommandRegistry[T <: Command](val commands: Set[T]) {
 
-  val commandMap: Map[String, Command] = {
-    val t = new mutable.HashMap[String, Command]
+  val commandMap: Map[String, T] = {
+    val t = new mutable.HashMap[String, T]
     for (c <- commands)
       for (a <- c.aliases)
         t.put(a, c)
     t.toMap
   }
 
-  def apply(name: String): Option[Command] = commandMap.get(name)
+  def apply(name: String): Option[T] = commandMap.get(name)
 }

@@ -6,7 +6,7 @@ import pw.byakuren.modbot.guild.GuildDataManager
 import pw.byakuren.modbot.util.Utilities._
 
 class ViewChatQueue(implicit guildDataManager: GuildDataManager) extends
-  Command(Seq("chatqueue", "queue"), "See the chat queue.", CommandPermission.Admins) {
+  GuildCommand(Seq("chatqueue", "queue"), "See the chat queue.", "", CommandPermission.Admins) {
 
   override def run(message: Message, args: Seq[String]): Unit = {
     val queue = guildDataManager(message.getGuild).getQueue()
