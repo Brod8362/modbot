@@ -57,5 +57,6 @@ class GuildData(val server: Guild, val guildSettings: GuildSettings, var logChan
 
   override def write(SQLConnection: SQLConnection): Unit = {
     logChannel.map(SQLConnection.setGuildLogChannel)
+    guildSettings.write(SQLConnection)
   }
 }

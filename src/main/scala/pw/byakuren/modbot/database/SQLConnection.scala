@@ -35,7 +35,7 @@ class SQLConnection {
 
   def writeConversation(conversation: Conversation): Int = {
     val messageLog = conversation.messageLog
-    val batchParams = messageLog.map(m => Seq(conversation.uuid, conversation.getGuild.get.getIdLong ,conversation.user.getIdLong, conversation.time,
+    val batchParams = messageLog.map(m => Seq(conversation.uuid, conversation.getGuild.get.getIdLong, conversation.user.getIdLong, conversation.time,
       messageLog.indexOf(m), m.getAuthor.getIdLong, m.getContentRaw))
     DB localTx { implicit session =>
       sql"INSERT INTO conversation_log VALUES (?,?,?,?,?,?,?)".batch(batchParams: _*).apply()
@@ -53,9 +53,11 @@ class SQLConnection {
   }
 
   def writeGuildSettings(guildSettings: GuildSettings): Unit = {
-    sql"INSERT OR REPLACE INTO guild_settings VALUES (${guildSettings.guild.getIdLong}, ${guildSettings.value}"
-      .execute()
-      .apply()
+    DB localTx { implicit session =>
+      sql"INSERT OR REPLACE INTO guild_settings VALUES (${guildSettings.guild.getIdLong}, ${guildSettings.value})"
+        .execute()
+        .apply()
+    }
   }
 
   def getGuildSettings(guild: Guild): Option[GuildSettings] = {
