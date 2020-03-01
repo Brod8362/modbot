@@ -16,7 +16,7 @@ class CommandExecutionHandler(owner: User, guildCommands: CommandRegistry[GuildC
                               privateCommands: CommandRegistry[PrivateCommand])
                              (implicit guildDataManager: GuildDataManager,
                               conversationTracker: ConversationTracker) extends ListenerAdapter {
-  private val commandExecutor = new CommandExecutor
+  private val commandExecutor = new CommandExecutor(owner.openPrivateChannel().complete())
   override def onGuildMessageReceived(event: GuildMessageReceivedEvent): Unit = {
     if (event.getAuthor.isBot) return
     if (event.getMessage.getContentRaw.startsWith(prefix)) {
