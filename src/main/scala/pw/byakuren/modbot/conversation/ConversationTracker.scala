@@ -18,6 +18,9 @@ class ConversationTracker(implicit guildDataManager: GuildDataManager) extends S
         completed.add(c)
         ongoing.remove(id)
         return None
+      } else if (c.getState==ConversationState.Canceled) {
+        ongoing.remove(id)
+        return None
       }
     }
     cf
