@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.{JDA, JDABuilder, Permission}
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import pw.byakuren.modbot.commands.CommandPermission.CommandPermission
-import pw.byakuren.modbot.commands.{Command, CommandPermission, ConversationList, GuildCommand, PrivateCommand, SetConfig, SetLogChannel, ViewChatQueue}
+import pw.byakuren.modbot.commands.{Command, CommandPermission, ConversationList, GuildCommand, PrivateCommand, RecallConversationGuild, RecallConversationPrivate, SetConfig, SetLogChannel, ViewChatQueue}
 import pw.byakuren.modbot.config.BotConfig
 import pw.byakuren.modbot.conversation.ConversationTracker
 import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
@@ -37,10 +37,13 @@ object Main extends ListenerAdapter {
     new ViewChatQueue(),
     stopCommand,
     new ConversationList(),
-    new SetConfig())
+    new SetConfig(),
+    new RecallConversationGuild())
   )
 
-  val privateCommandRegistry = new CommandRegistry[PrivateCommand](Set())
+  val privateCommandRegistry = new CommandRegistry[PrivateCommand](Set(
+    new RecallConversationPrivate()
+  ))
 
   val sqlWritable: Seq[SQLWritable] = Seq(guildDataManager, conversationTracker)
 

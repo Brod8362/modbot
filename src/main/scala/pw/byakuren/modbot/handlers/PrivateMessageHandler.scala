@@ -2,6 +2,7 @@ package pw.byakuren.modbot.handlers
 
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import pw.byakuren.modbot.Main
 import pw.byakuren.modbot.conversation.ConversationTracker
 import pw.byakuren.modbot.guild.GuildDataManager
 
@@ -13,8 +14,10 @@ class PrivateMessageHandler(implicit tracker: ConversationTracker, guildDataMana
       case Some(c) =>
         c.handleMessage(event.getMessage)
       case None =>
-        val c = tracker.create(event.getAuthor)
-        c.handleMessage(event.getMessage)
+        if (!event.getMessage.getContentRaw.startsWith(Main.prefix)) {
+          val c = tracker.create(event.getAuthor)
+          c.handleMessage(event.getMessage)
+        }
     }
   }
 }

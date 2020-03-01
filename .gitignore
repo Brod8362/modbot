@@ -3,3 +3,5 @@
 /project/target/
 config
 /.idea/modules/
+log/
+modbot.db

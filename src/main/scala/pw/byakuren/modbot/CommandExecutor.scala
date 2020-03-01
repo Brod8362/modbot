@@ -31,13 +31,13 @@ class CommandExecutor(logLocation: MessageChannel)(implicit guildDataManager: Gu
   }
 
   def handleException(message: Message, command: Command, exception: Exception, invocation: String): Unit = {
-    val errorMsg = f"__Uncaught Exception:__\n${exception}\n`$invocation`\n```${exception.getStackTrace.mkString("\n")}```"
+    val errorMsg = f"__Uncaught Exception:__\n$exception\n`$invocation`\n```${exception.getStackTrace.mkString("\n")}```"
     val errorData =
       f"""|Exception while running command: $exception
          |Invocation: $invocation
          |User: ${message.getAuthor}
-         |Guild: ${Option(message.getGuild)}
-         |Guild Config: ${Option(message.getGuild.getSettings.value)}
+         |Guild: ${if (message.isFromGuild) message.getGuild else "N/A"}
+         |Guild Config: ${if (message.isFromGuild) message.getGuild.getSettings.value else "N/A"}
          |Time: ${LocalDateTime.now}
          |==========
          |${exception.getStackTrace.mkString("\n")}
@@ -45,10 +45,11 @@ class CommandExecutor(logLocation: MessageChannel)(implicit guildDataManager: Gu
     storedErrors.addOne((invocation, exception))
     message.reply("An error has occurred while running your command.")
     val filename=s"strace-${command.name}_${exception.hashCode().toHexString}.txt"
-    logLocation.sendMessage(errorMsg).addFile(errorData.getBytes(), filename).queue()
+    logLocation.sendMessage(errorMsg.substring(0, errorMsg.length min 2000)).addFile(errorData.getBytes(), filename).queue()
     val f = new FileOutputStream(new File(s"log/$filename"))
     f.write(errorData.getBytes)
     f.close()
+    exception.printStackTrace()
   }
 
   def getStoredErrors: Seq[(String, Exception)] = storedErrors.toSeq

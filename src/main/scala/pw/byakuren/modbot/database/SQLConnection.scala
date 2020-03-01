@@ -4,7 +4,7 @@ import java.sql.Date
 import java.util.UUID
 
 import net.dv8tion.jda.api.entities.{Guild, TextChannel, User}
-import pw.byakuren.modbot.conversation.Conversation
+import pw.byakuren.modbot.conversation.{Conversation, PreviousConversation}
 import pw.byakuren.modbot.guild.GuildSettings
 import scalikejdbc._
 
@@ -66,5 +66,33 @@ class SQLConnection {
       case Some(bf) => Some(new GuildSettings(guild, bf))
       case _ => None
     }
+  }
+
+  def getConversation(uuid: String, user: User): Option[PreviousConversation] = {
+    val list =
+      sql"""
+         SELECT uuid,guild,user_id,message_author,content FROM conversation_log WHERE uuid LIKE ${uuid+"%"} AND
+         user_id=${user.getIdLong}
+       """.map(rs => (rs.string("uuid"), rs.long("guild"), rs.long("user_id"), rs.long("message_author"),
+        rs.string("content"))).list().apply()
+    if (list.isEmpty) return None
+    val guild = user.getJDA.getGuildById(list.head._2)
+    Some(new PreviousConversation(
+      UUID.fromString(list.head._1), user, guild, list.map(t => (guild.getMemberById(t._4).getUser, t._5)))
+    )
+  }
+
+  def getConversation(uuid: String, guild: Guild): Option[PreviousConversation] = {
+    val list =
+      sql"""SELECT uuid,guild,user_id,message_author,content FROM conversation_log WHERE uuid LIKE ${uuid+"%"} AND guild=${guild.getIdLong}"""
+        .map(rs => (rs.string("uuid"), rs.long("user_id"), rs.long("message_author"),
+        rs.string("content")))
+        .list()
+        .apply()
+    if (list.isEmpty) return None
+    val user = guild.getMemberById(list.head._3).getUser
+    Some(new PreviousConversation(
+      UUID.fromString(list.head._1), user, guild, list.map(t => (guild.getMemberById(t._3).getUser, t._4)))
+    )
   }
 }

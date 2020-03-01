@@ -107,8 +107,8 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
   def complete(): List[Message] = {
     state = ConversationState.Closed
     userChannel.sendMessage(
-      f"The conversation has conlcuded and ${messages.size} messages have been recorded. You may access the log " +
-        f"again at anytime by running the command (TBD)"
+      s"The conversation has conlcuded and ${messages.size} messages have been recorded. You may access the log " +
+        s"again at anytime by running the command `%recall ${uuid.toString.substring(0,8)}`"
     ).queue()
     sendGuildMessage(f"`==>` ${user.getAsMention} `'s chat has ended.`\n`ID:${uuid.toString.substring(0, 8)}\nMessages:${messageLog.size}`")
     for (conversation <- guildOption.get.getData.nextConversationInQueue()) {
