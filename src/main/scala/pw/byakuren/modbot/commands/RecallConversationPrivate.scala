@@ -9,11 +9,14 @@ class RecallConversationPrivate(implicit SQLConnection: SQLConnection) extends P
       message.reply("You need to provide a UUID!")
       return
     }
-    SQLConnection.getConversation(args.head, message.getAuthor) match {
-      case Some(x) =>
-        message.reply(x.privateRepresentation)
-      case None =>
-        message.reply(s"No conversation found with UUID ${args.head}")
+    val c = SQLConnection.getConversations(args.head, message.getAuthor)
+    c.size match {
+      case 1 =>
+        message.reply(c.head.privateRepresentation)
+      case 0 =>
+        message.reply(s"No conversation with ID ${args.head} found.")
+      case _ =>
+        message.reply(s"More than one conversation matches that ID. Try being more specific.")
     }
   }
 }

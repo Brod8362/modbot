@@ -10,11 +10,14 @@ class RecallConversationGuild(implicit val SQLConnection: SQLConnection) extends
       message.reply("You need to provide a UUID!")
       return
     }
-    SQLConnection.getConversation(args.head, message.getGuild) match {
-      case Some(x) =>
-        message.reply(x.guildRepresentation)
-      case None =>
-        message.reply(s"No conversation found with UUID ${args.head}")
+    val c = SQLConnection.getConversations(args.head, message.getAuthor)
+    c.size match {
+      case 1 =>
+        message.reply(c.head.guildRepresentation)
+      case 0 =>
+        message.reply(s"No conversation with ID ${args.head} found.")
+      case _ =>
+        message.reply(s"More than one conversation matches that ID. Try being more specific.")
     }
   }
 }

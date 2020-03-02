@@ -3,6 +3,7 @@ package pw.byakuren.modbot.database
 import java.sql.Date
 import java.util.UUID
 
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.{Guild, TextChannel, User}
 import pw.byakuren.modbot.conversation.{Conversation, PreviousConversation}
 import pw.byakuren.modbot.guild.GuildSettings
@@ -68,31 +69,34 @@ class SQLConnection {
     }
   }
 
-  def getConversation(uuid: String, user: User): Option[PreviousConversation] = {
+  def getConversations(uuid: String, user: User): Seq[PreviousConversation] = {
     val list =
       sql"""
-         SELECT uuid,guild,user_id,message_author,content FROM conversation_log WHERE uuid LIKE ${uuid+"%"} AND
+         SELECT uuid,guild,user_id,message_author,content FROM conversation_log WHERE uuid LIKE ${uuid + "%"} AND
          user_id=${user.getIdLong}
        """.map(rs => (rs.string("uuid"), rs.long("guild"), rs.long("user_id"), rs.long("message_author"),
         rs.string("content"))).list().apply()
-    if (list.isEmpty) return None
-    val guild = user.getJDA.getGuildById(list.head._2)
-    Some(new PreviousConversation(
-      UUID.fromString(list.head._1), user, guild, list.map(t => (guild.getMemberById(t._4).getUser, t._5)))
-    )
+    conversationFromResults(list, user.getJDA)
   }
 
-  def getConversation(uuid: String, guild: Guild): Option[PreviousConversation] = {
+  def getConversations(uuid: String, guild: Guild): Seq[PreviousConversation] = {
     val list =
-      sql"""SELECT uuid,guild,user_id,message_author,content FROM conversation_log WHERE uuid LIKE ${uuid+"%"} AND guild=${guild.getIdLong}"""
-        .map(rs => (rs.string("uuid"), rs.long("user_id"), rs.long("message_author"),
-        rs.string("content")))
+      sql"""SELECT uuid,guild,user_id,message_author,content FROM conversation_log WHERE uuid LIKE ${uuid + "%"} AND guild=${guild.getIdLong}"""
+        .map(rs => (rs.string("uuid"), rs.long("guild"), rs.long("user_id"), rs.long("message_author"),
+          rs.string("content")))
         .list()
         .apply()
-    if (list.isEmpty) return None
-    val user = guild.getMemberById(list.head._3).getUser
-    Some(new PreviousConversation(
-      UUID.fromString(list.head._1), user, guild, list.map(t => (guild.getMemberById(t._3).getUser, t._4)))
-    )
+    conversationFromResults(list, guild.getJDA)
+  }
+
+  private def conversationFromResults(list: List[(String, Long, Long, Long, String)], jda: JDA): Seq[PreviousConversation] = {
+    {
+      for (uuid:String <- list.map(_._1).toSet) yield {
+        val sublist = list.filter(_._1 == uuid)
+        val guild = jda.getGuildById(sublist.head._2)
+        val user = guild.getMemberById(sublist.head._3)
+        new PreviousConversation(UUID.fromString(sublist.head._1), user.getUser, guild, sublist.map(t => (guild.getMemberById(t._4).getUser, t._5)))
+      }
+      }.toSeq
   }
 }
