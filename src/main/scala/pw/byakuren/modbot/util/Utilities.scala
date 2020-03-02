@@ -3,7 +3,8 @@ package pw.byakuren.modbot.util
 import net.dv8tion.jda.api.{OnlineStatus, Permission}
 import net.dv8tion.jda.api.entities.{Guild, Member, Message, Role, TextChannel, User}
 import pw.byakuren.modbot.conversation.ConversationTracker
-import pw.byakuren.modbot.guild.{GuildData, GuildDataManager, GuildSettings}
+import pw.byakuren.modbot.guild.GuildSetting.GuildSetting
+import pw.byakuren.modbot.guild.{GuildData, GuildDataManager, GuildSetting, GuildSettings}
 
 import scala.jdk.CollectionConverters._
 
@@ -29,6 +30,7 @@ object Utilities {
     def getData(implicit guildDataManager: GuildDataManager): GuildData = guildDataManager(guild)
     def logChannel(implicit guildDataManager: GuildDataManager): Option[TextChannel] = getData.logChannel
     def modRole(implicit guildDataManager: GuildDataManager): Option[Role] = getData.moderatorRole
+    def customPrefix(implicit guildDataManager: GuildDataManager): Option[String] = getData.customPrefix
     def getSettings(implicit guildDataManager: GuildDataManager): GuildSettings = getData.guildSettings
     def getAdminMembers(implicit guildDataManager: GuildDataManager): Set[Member] = {
       val roles = for (role <- guild.modRole) yield {
@@ -36,6 +38,9 @@ object Utilities {
       }
       val perms = guild.getMembers.asScala.filter(_.hasPermission(Permission.ADMINISTRATOR)).toSet
       perms++roles.getOrElse(Nil)
+    }
+    def apply(setting: GuildSetting)(implicit guildDataManager: GuildDataManager): Boolean = {
+      guild.getSettings.apply(setting)
     }
   }
   implicit class MemberUtils(member: Member) {

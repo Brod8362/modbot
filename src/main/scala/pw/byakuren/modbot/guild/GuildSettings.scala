@@ -6,8 +6,10 @@ import pw.byakuren.modbot.guild.GuildSetting.GuildSetting
 
 case object GuildSetting extends Enumeration {
   type GuildSetting = Int
-  val ReportingEnabled = 1
+  val reportingEnabled = 1
   val enableFAQ = 2
+  val useCustomPrefix = 3
+  val disableDefaultPrefix = 4
 }
 
 class GuildSettings(val guild: Guild, private var bitfield: Int) extends SQLWritable {

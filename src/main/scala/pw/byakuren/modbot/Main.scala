@@ -2,13 +2,11 @@ package pw.byakuren.modbot
 
 import java.io.File
 
-import net.dv8tion.jda.api.entities.{Member, Message, User}
+import net.dv8tion.jda.api.entities.{Message, User}
 import net.dv8tion.jda.api.events.ReadyEvent
-import net.dv8tion.jda.api.{JDA, JDABuilder, Permission}
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import pw.byakuren.modbot.commands.CommandPermission.CommandPermission
-import pw.byakuren.modbot.commands.{Command, CommandPermission, ConversationList, GuildCommand, PrivateCommand, RecallConversationGuild, RecallConversationPrivate, SetConfig, SetLogChannel, ViewChatQueue}
+import net.dv8tion.jda.api.{JDA, JDABuilder}
+import pw.byakuren.modbot.commands._
 import pw.byakuren.modbot.config.BotConfig
 import pw.byakuren.modbot.conversation.ConversationTracker
 import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
@@ -38,7 +36,8 @@ object Main extends ListenerAdapter {
     stopCommand,
     new ConversationList(),
     new SetConfig(),
-    new RecallConversationGuild())
+    new RecallConversationGuild(),
+    new SetPrefix())
   )
 
   val privateCommandRegistry = new CommandRegistry[PrivateCommand](Set(
@@ -63,7 +62,7 @@ object Main extends ListenerAdapter {
   }
 
   override def onReady(event: ReadyEvent): Unit = {
-    guildDataManager.loadGuilds(event.getJDA, sql)
+    guildDataManager.loadGuilds(event.getJDA)
   }
 
   def shutdown(jda: JDA): Unit = {

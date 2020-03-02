@@ -10,8 +10,8 @@ import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 
 import scala.collection.mutable
 
-class GuildData(val server: Guild, val guildSettings: GuildSettings, var logChannel: Option[TextChannel], var moderatorRole: Option[Role] = None)
-  extends SQLWritable {
+class GuildData(val server: Guild, val guildSettings: GuildSettings, var logChannel: Option[TextChannel],
+                var moderatorRole: Option[Role] = None, var customPrefix: Option[String]) extends SQLWritable {
 
   private val conversationQueue = new mutable.Queue[Conversation]
 
@@ -58,5 +58,7 @@ class GuildData(val server: Guild, val guildSettings: GuildSettings, var logChan
   override def write(SQLConnection: SQLConnection): Unit = {
     logChannel.map(SQLConnection.setGuildLogChannel)
     guildSettings.write(SQLConnection)
+    for (customPref <- customPrefix)
+      SQLConnection.writeGuildPrefix(server, customPref)
   }
 }

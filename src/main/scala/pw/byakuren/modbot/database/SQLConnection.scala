@@ -20,6 +20,7 @@ class SQLConnection {
     timestamp DATETIME NOT NULL, message_index INTEGER NOT NULL, message_author INTEGER NOT NULL, content STRING,
     PRIMARY KEY(uuid, message_index))""".execute().apply()
   sql"CREATE TABLE IF NOT EXISTS guild_settings (guild INTEGER PRIMARY KEY NOT NULL, bitfield NOT NULL)".execute().apply()
+  sql"CREATE TABLE IF NOT EXISTS guild_prefix (guild INTEGER PRIMARY KEY NOT NULL, prefix STRING)".execute().apply()
 
   def setGuildLogChannel(channel: TextChannel): Boolean = {
     sql"INSERT OR REPLACE INTO log_channel VALUES (${channel.getGuild.getIdLong}, ${channel.getIdLong})".execute().apply()
@@ -98,5 +99,20 @@ class SQLConnection {
         new PreviousConversation(UUID.fromString(sublist.head._1), user.getUser, guild, sublist.map(t => (guild.getMemberById(t._4).getUser, t._5)))
       }
       }.toSeq
+  }
+
+  def writeGuildPrefix(guild: Guild, prefix: String): Unit = {
+    DB localTx { implicit session =>
+      sql"""INSERT OR REPLACE INTO guild_prefix VALUES (${guild.getIdLong},$prefix)"""
+        .execute()
+        .apply()
+    }
+  }
+
+  def getGuildPrefix(guild: Guild): Option[String] = {
+    sql"""SELECT prefix FROM guild_prefix WHERE guild=${guild.getIdLong}"""
+      .map(rs => rs.string("prefix"))
+      .single()
+      .apply()
   }
 }

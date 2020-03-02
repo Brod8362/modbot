@@ -7,11 +7,11 @@ import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
-class GuildDataManager extends SQLWritable {
+class GuildDataManager(implicit val SQLConnection: SQLConnection) extends SQLWritable {
 
   private val dataMap = new mutable.HashMap[Guild, GuildData]
 
-  def loadGuilds(jda: JDA, SQLConnection: SQLConnection): Unit = {
+  def loadGuilds(jda: JDA): Unit = {
     for (guild <- jda.getGuilds.asScala)
       dataMap.put(guild, loadGuildData(guild, SQLConnection))
   }
@@ -19,17 +19,15 @@ class GuildDataManager extends SQLWritable {
   def apply(guild: Guild): GuildData = {
     dataMap.get(guild) match {
       case None =>
-        dataMap.put(guild, new GuildData(guild, new GuildSettings(guild, 0), None, None))
+        dataMap.put(guild, loadGuildData(guild, SQLConnection))
       case _ =>
     }
     dataMap(guild)
   }
 
   def loadGuildData(guild: Guild, sql: SQLConnection): GuildData = {
-
     new GuildData(guild, sql.getGuildSettings(guild).getOrElse(new GuildSettings(guild, 0)),
-      sql.getGuildLogChannel(guild),
-      None)
+      sql.getGuildLogChannel(guild), None, sql.getGuildPrefix(guild))
   }
 
   override def write(SQLConnection: SQLConnection): Unit = {
