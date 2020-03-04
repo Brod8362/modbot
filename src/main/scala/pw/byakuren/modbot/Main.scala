@@ -11,7 +11,8 @@ import pw.byakuren.modbot.config.BotConfig
 import pw.byakuren.modbot.conversation.ConversationTracker
 import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 import pw.byakuren.modbot.guild.GuildDataManager
-import pw.byakuren.modbot.handlers.{CommandExecutionHandler, ConversationReplyHandler, PrivateMessageHandler}
+import pw.byakuren.modbot.handlers.{CommandExecutionHandler, ConversationReplyHandler, PaginatedMessageHandler, PrivateMessageHandler}
+import pw.byakuren.modbot.util.TaskScheduler
 import pw.byakuren.modbot.util.Utilities._
 
 object Main extends ListenerAdapter {
@@ -21,8 +22,10 @@ object Main extends ListenerAdapter {
   val prefix: String = config.getString("prefix").get
   var ownerOption: Option[User] = None
 
+  implicit val scheduler: TaskScheduler = new TaskScheduler
   implicit val guildDataManager: GuildDataManager = new GuildDataManager
   implicit val conversationTracker: ConversationTracker = new ConversationTracker
+  implicit val paginatedMessageHandler: PaginatedMessageHandler = new PaginatedMessageHandler
 
   private val stopCommand = new GuildCommand(Seq("stop"), "Stop the bot", "", CommandPermission.Debug) {
     override def run(message: Message, args: Seq[String]): Unit = {
@@ -36,12 +39,12 @@ object Main extends ListenerAdapter {
     stopCommand,
     new ConversationList(),
     new SetConfig(),
-    new RecallConversationGuild(),
+    new RecallCommands.RecallConversationGuild(),
     new SetPrefix())
   )
 
   val privateCommandRegistry = new CommandRegistry[PrivateCommand](Set(
-    new RecallConversationPrivate()
+    new RecallCommands.RecallConversationPrivate()
   ))
 
   val sqlWritable: Seq[SQLWritable] = Seq(guildDataManager, conversationTracker)
@@ -59,6 +62,7 @@ object Main extends ListenerAdapter {
     }
     ownerOption = Some(jda.retrieveApplicationInfo().complete().getOwner)
     jda.addEventListener(new CommandExecutionHandler(ownerOption.get, guildCommandRegistry, privateCommandRegistry))
+    jda.addEventListener(paginatedMessageHandler)
   }
 
   override def onReady(event: ReadyEvent): Unit = {
