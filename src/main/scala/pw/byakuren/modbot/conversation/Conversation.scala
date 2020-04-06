@@ -91,7 +91,7 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
       f"You are now messaging the moderators of ${g.getName} directly. " +
         f"A log of this conversation will be recorded and sent to the moderators. The moderators can reply anonymously " +
         f"through this bot, but may or may not choose to identify themselves. To end the conversation, say `end`").queue()
-    sendGuildMessage(f"`==>` ${user.getAsMention} `has entered the chat.`")
+    sendGuildMessage(f"`==>` ${user.getAsMention} `has entered the chat. @here`")
     state = ConversationState.InProgress
     userChannel.sendMessage(makeUserString(g.logChannel.get.getMembers.asScala.filter(!_.getUser.isBot)
       .sortBy(_.getOnlineStatus()).toSet)).queue()
