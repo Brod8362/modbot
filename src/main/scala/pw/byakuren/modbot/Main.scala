@@ -43,7 +43,8 @@ object Main extends ListenerAdapter {
     new SetConfig(),
     new RecallCommands.RecallConversationGuild(),
     new SetPrefix(),
-    HelpCommands.Guild)
+    HelpCommands.Guild,
+    new SetGame)
   )
 
   val privateCommandRegistry = new CommandRegistry[PrivateCommand](Set(
@@ -64,7 +65,7 @@ object Main extends ListenerAdapter {
       case None =>
         throw new RuntimeException("Token not found, check config file")
     }
-    ownerOption = Some(jda.retrieveApplicationInfo().complete().getOwner)
+    ownerOption = Option(jda.retrieveUserById(config.getString("debuguser").getOrElse("0")).complete())
     jda.addEventListener(new CommandExecutionHandler(ownerOption.get, guildCommandRegistry, privateCommandRegistry))
     jda.addEventListener(paginatedMessageHandler)
   }

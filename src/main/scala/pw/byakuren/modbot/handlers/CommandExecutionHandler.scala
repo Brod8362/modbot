@@ -1,17 +1,15 @@
 package pw.byakuren.modbot.handlers
 
-import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.{Member, User}
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import pw.byakuren.modbot.{CommandExecutor, CommandRegistry}
-import pw.byakuren.modbot.Main
 import pw.byakuren.modbot.commands.CommandPermission.CommandPermission
 import pw.byakuren.modbot.commands.{CommandPermission, GuildCommand, PrivateCommand}
 import pw.byakuren.modbot.conversation.ConversationTracker
 import pw.byakuren.modbot.guild.{GuildDataManager, GuildSetting}
 import pw.byakuren.modbot.util.Utilities._
+import pw.byakuren.modbot.{CommandExecutor, CommandRegistry, Main}
 
 class CommandExecutionHandler(owner: User, guildCommands: CommandRegistry[GuildCommand],
                               privateCommands: CommandRegistry[PrivateCommand])
