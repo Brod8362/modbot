@@ -7,7 +7,7 @@ import pw.byakuren.modbot.util.Utilities._
 import scala.collection.mutable
 
 class SetPrefix(implicit guildDataManager: GuildDataManager) extends
-  GuildCommand(Seq("prefix"), "", "", CommandPermission.Admins) {
+  GuildCommand(Seq("prefix"), "Set the guild's custom prefix.", "", CommandPermission.Admins) {
   val pending = new mutable.HashMap[Guild, String]
   override def run(message: Message, args: Seq[String]): Unit = {
     if (args.isEmpty) {

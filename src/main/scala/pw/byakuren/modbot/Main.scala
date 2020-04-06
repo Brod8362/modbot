@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.{Message, User}
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.{JDA, JDABuilder}
+import pw.byakuren.modbot.cache.ConversationCache
 import pw.byakuren.modbot.commands._
 import pw.byakuren.modbot.config.BotConfig
 import pw.byakuren.modbot.conversation.ConversationTracker
@@ -23,6 +24,7 @@ object Main extends ListenerAdapter {
   var ownerOption: Option[User] = None
 
   implicit val scheduler: TaskScheduler = new TaskScheduler
+  implicit val conversationCache = new ConversationCache
   implicit val guildDataManager: GuildDataManager = new GuildDataManager
   implicit val conversationTracker: ConversationTracker = new ConversationTracker
   implicit val paginatedMessageHandler: PaginatedMessageHandler = new PaginatedMessageHandler
@@ -40,11 +42,13 @@ object Main extends ListenerAdapter {
     new ConversationList(),
     new SetConfig(),
     new RecallCommands.RecallConversationGuild(),
-    new SetPrefix())
+    new SetPrefix(),
+    HelpCommands.Guild)
   )
 
   val privateCommandRegistry = new CommandRegistry[PrivateCommand](Set(
-    new RecallCommands.RecallConversationPrivate()
+    new RecallCommands.RecallConversationPrivate(),
+    HelpCommands.Private
   ))
 
   val sqlWritable: Seq[SQLWritable] = Seq(guildDataManager, conversationTracker)

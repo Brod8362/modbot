@@ -15,6 +15,9 @@ object Utilities {
     def reply(replyText: String): Unit = {
       message.getChannel.sendMessage(replyText.substring(0, replyText.length min 2000)).queue()
     }
+    def reply(messageEmbed: MessageEmbed): Unit = {
+      message.getChannel.sendMessage(messageEmbed).queue()
+    }
     def replyFuture(replyText: String): Future[Message] = {
       Future {
         message.getChannel.sendMessage(replyText.substring(0, replyText.length min 2000)).complete()

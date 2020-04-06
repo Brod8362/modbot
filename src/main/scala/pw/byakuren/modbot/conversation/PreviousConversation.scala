@@ -22,4 +22,8 @@ class PreviousConversation(val uuid: UUID, val user: User, val guild: Guild, mes
   def pagedGuild: PaginatedStrings = {
     new PaginatedStrings(guildRepresentation.split("\n").toIndexedSeq, 8, 0)
   }
+
+  def matchesUuid(string: String): Boolean = {
+    uuid.toString().matches(string+".*")
+  }
 }

@@ -156,4 +156,8 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
   }
 
   def getGuild: Option[Guild] = guildOption
+
+  def toPreviousConversation: PreviousConversation = {
+    new PreviousConversation(uuid, user, guildOption.get, messageLog.map(m => (m.getAuthor, m.getContentRaw)))
+  }
 }

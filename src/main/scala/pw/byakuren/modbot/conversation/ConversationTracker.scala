@@ -1,12 +1,13 @@
 package pw.byakuren.modbot.conversation
 
 import net.dv8tion.jda.api.entities.User
+import pw.byakuren.modbot.cache.ConversationCache
 import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 import pw.byakuren.modbot.guild.GuildDataManager
 
 import scala.collection.mutable
 
-class ConversationTracker(implicit guildDataManager: GuildDataManager) extends SQLWritable {
+class ConversationTracker(implicit guildDataManager: GuildDataManager, conversationCache: ConversationCache) extends SQLWritable {
 
   private val ongoing = new mutable.HashMap[Long, Conversation]
   private val completed = new mutable.HashSet[Conversation]()
@@ -43,6 +44,7 @@ class ConversationTracker(implicit guildDataManager: GuildDataManager) extends S
     ongoing.remove(conversation.user.getIdLong) match {
       case Some(x) =>
         completed.add(x)
+        conversationCache.add(x.toPreviousConversation)
       case _ =>
     }
   }
