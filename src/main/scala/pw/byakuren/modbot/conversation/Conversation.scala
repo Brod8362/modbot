@@ -22,7 +22,9 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
   val uuid = UUID.randomUUID()
   val time = Time.valueOf(LocalTime.now())
   private val userChannel = user.openPrivateChannel().complete()
+  var showUserNameFlag = true //true when the user's name should be shown on the mod's side
   var commandAlertFlag = false //this is set true on the first instance of a command being run on the moderator's side.
+  var allowGhostOnNextMessageFlag = true
 
   def getState: ConversationState.Value = state
 
@@ -64,8 +66,10 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
           " to see it.")
       case ConversationState.InProgress =>
         addMessage(message)
-        if (!message.getAuthor.equals(message.getJDA.getSelfUser))
-          sendGuildMessage(f"[${message.getAuthor.getAsMention}] ${message.getContentRaw}")
+        if (!message.getAuthor.equals(message.getJDA.getSelfUser)) {
+          sendGuildMessage(f"${if (showUserNameFlag) f"[${message.getAuthor.getAsMention}]" else ""} ${message.getContentRaw}")
+          showUserNameFlag = false
+        }
       case _ =>
     }
   }
@@ -91,7 +95,7 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
       f"You are now messaging the moderators of ${g.getName} directly. " +
         f"A log of this conversation will be recorded and sent to the moderators. The moderators can reply anonymously " +
         f"through this bot, but may or may not choose to identify themselves. To end the conversation, say `end`").queue()
-    sendGuildMessage(f"`==>` ${user.getAsMention} `has entered the chat. @here`")
+    sendGuildMessage(f"`==>` ${user.getAsMention} `has entered the chat. ` @here")
     state = ConversationState.InProgress
     userChannel.sendMessage(makeUserString(g.logChannel.get.getMembers.asScala.filter(!_.getUser.isBot)
       .sortBy(_.getOnlineStatus()).toSet)).queue()
@@ -140,11 +144,13 @@ class Conversation(val user: User)(implicit guildDataManager: GuildDataManager, 
   }
 
   private def sendGuildMessage(string: String): Unit = {
+    allowGhostOnNextMessageFlag = false
     for (guild <- guildOption; logChannel <- guild.getData.logChannel)
       logChannel.sendMessage(string).queue()
   }
 
   def sendReply(message: Message): Unit = {
+    showUserNameFlag = true
     userChannel.sendMessage(f"> ${message.translateMentions(message.getJDA.getSelfUser, message.getAuthor)}").queue()
     messages.addOne(message)
   }
