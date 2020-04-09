@@ -33,7 +33,7 @@ class CommandExecutionHandler(owner: User, guildCommands: CommandRegistry[GuildC
           else
             event.getMessage.reply("Insufficient permission")
         case _ =>
-          event.getMessage.reply("Command not found")
+          //do nothing
       }
     }
   }
@@ -50,7 +50,7 @@ class CommandExecutionHandler(owner: User, guildCommands: CommandRegistry[GuildC
         case Some(command) =>
           commandExecutor.execute(command, event.getMessage, args drop 1)
         case _ =>
-          event.getMessage.reply("Command not found")
+          //do nothing
       }
     }
   }
