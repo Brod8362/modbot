@@ -62,10 +62,10 @@ object Utilities {
     def toMarkdownStatusString: String = {
       val name = member.getUser.getName+"#"+member.getUser.getDiscriminator
       member.getOnlineStatus match {
-        case OnlineStatus.ONLINE => f"[$name]()"
-        case OnlineStatus.IDLE => f"< $name >"
-        case OnlineStatus.DO_NOT_DISTURB => f"/* $name *"
-        case _ => f"> $name"
+        case OnlineStatus.ONLINE => f"[$name](Online)"
+        case OnlineStatus.IDLE => f"< $name > Away"
+        case OnlineStatus.DO_NOT_DISTURB => f"/* $name * Do not Disturb"
+        case _ => f"> $name Offline"
       }
     }
     def isGuildModerator(implicit guildDataManager: GuildDataManager): Boolean = {

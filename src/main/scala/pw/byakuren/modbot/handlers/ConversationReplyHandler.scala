@@ -16,7 +16,7 @@ class ConversationReplyHandler(prefix: String)(implicit guildDataManager: GuildD
     guildDataManager(event.getGuild).logChannel match {
       case Some(channel) if channel == event.getChannel =>
         guildDataManager(event.getGuild).activeConversation match {
-          case Some(conversation) if event.getMessage.getContentRaw == "end" =>
+          case Some(conversation) if event.getMessage.getContentRaw.toLowerCase == "end" =>
             conversation.complete()
           case Some(conversation) if isCommand || event.getAuthor.isBot =>
             if (!conversation.commandAlertFlag) {
