@@ -12,7 +12,7 @@ import pw.byakuren.modbot.config.BotConfig
 import pw.byakuren.modbot.conversation.ConversationTracker
 import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 import pw.byakuren.modbot.guild.GuildDataManager
-import pw.byakuren.modbot.handlers.{CommandExecutionHandler, ConversationReplyHandler, PaginatedMessageHandler, PrivateMessageHandler}
+import pw.byakuren.modbot.handlers.{BotMentionHandler, CommandExecutionHandler, ConversationReplyHandler, PaginatedMessageHandler, PrivateMessageHandler}
 import pw.byakuren.modbot.persistence.ConversationWriteThread
 import pw.byakuren.modbot.util.TaskScheduler
 import pw.byakuren.modbot.util.Utilities._
@@ -76,6 +76,7 @@ object Main extends ListenerAdapter {
     ownerOption = Option(jda.retrieveUserById(config.getString("debuguser").getOrElse("0")).complete())
     jda.addEventListener(new CommandExecutionHandler(ownerOption.get, guildCommandRegistry, privateCommandRegistry))
     jda.addEventListener(paginatedMessageHandler)
+    jda.addEventListener(new BotMentionHandler)
 
     /* register the shutdown hook to catch SIGINT and shutdown gracefully */
     Runtime.getRuntime.addShutdownHook(new Thread(() => {
