@@ -27,7 +27,7 @@ class GuildDataManager(implicit val SQLConnection: SQLConnection) extends SQLWri
 
   def loadGuildData(guild: Guild, sql: SQLConnection): GuildData = {
     new GuildData(guild, sql.getGuildSettings(guild).getOrElse(new GuildSettings(guild, 0)),
-      sql.getGuildLogChannel(guild), None, sql.getGuildPrefix(guild))
+      sql.getGuildLogChannel(guild), sql.getModeratorRole(guild), sql.getGuildPrefix(guild))
   }
 
   override def write(SQLConnection: SQLConnection): Unit = {

@@ -4,10 +4,11 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.{Message, MessageEmbed}
 import pw.byakuren.modbot.Main
 import pw.byakuren.modbot.Main.paginatedMessageHandler
+import pw.byakuren.modbot.guild.GuildDataManager
 import pw.byakuren.modbot.pagination.{PaginatedMessage, PaginatedStrings}
 import pw.byakuren.modbot.util.Utilities._
 
-object HelpCommands {
+class HelpCommands(implicit guildDataManager: GuildDataManager) {
 
   private val aliases = Seq("help", "h", "?")
   private val description = "Look up syntax and usage of commands"
@@ -26,7 +27,10 @@ object HelpCommands {
   }
 
   def logic(message: Message, args: Seq[String], isGuild: Boolean): Unit = {
-    val commands = privateCommands ++ (if (isGuild) guildcommands else Nil)
+    val commands = if (isGuild) guildCommands
+      .map(_.asInstanceOf[GuildCommand])
+      .filter(message.getMember.permissionLevel>=_.permission)
+    else privateCommands
     if (args.isEmpty) {
       val ps = new PaginatedStrings(commands.map(shortHelp).toIndexedSeq, 6)
       PaginatedMessage(message, addExtra, ps)
@@ -44,7 +48,7 @@ object HelpCommands {
     Main.privateCommandRegistry.commands.asInstanceOf[Set[Command]]
   }
 
-  private def guildcommands: Set[Command] = {
+  private def guildCommands: Set[Command] = {
     Main.guildCommandRegistry.commands.asInstanceOf[Set[Command]]
   }
 

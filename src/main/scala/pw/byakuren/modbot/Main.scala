@@ -13,6 +13,7 @@ import pw.byakuren.modbot.conversation.ConversationTracker
 import pw.byakuren.modbot.database.{SQLConnection, SQLWritable}
 import pw.byakuren.modbot.guild.GuildDataManager
 import pw.byakuren.modbot.handlers.{CommandExecutionHandler, ConversationReplyHandler, PaginatedMessageHandler, PrivateMessageHandler}
+import pw.byakuren.modbot.persistence.ConversationWriteThread
 import pw.byakuren.modbot.util.TaskScheduler
 import pw.byakuren.modbot.util.Utilities._
 
@@ -24,10 +25,15 @@ object Main extends ListenerAdapter {
   var ownerOption: Option[User] = None
 
   implicit val scheduler: TaskScheduler = new TaskScheduler
-  implicit val conversationCache = new ConversationCache
+  implicit val conversationCache: ConversationCache = new ConversationCache
   implicit val guildDataManager: GuildDataManager = new GuildDataManager
   implicit val conversationTracker: ConversationTracker = new ConversationTracker
   implicit val paginatedMessageHandler: PaginatedMessageHandler = new PaginatedMessageHandler
+
+  val conversationWriteThread: ConversationWriteThread = new ConversationWriteThread
+  conversationWriteThread.start()
+
+  val helpCommands = new HelpCommands
 
   private val stopCommand = new GuildCommand(Seq("stop"), "Stop the bot", "", CommandPermission.Debug) {
     override def run(message: Message, args: Seq[String]): Unit = {
@@ -43,13 +49,15 @@ object Main extends ListenerAdapter {
     new SetConfig(),
     new RecallCommands.RecallConversationGuild(),
     new SetPrefix(),
-    HelpCommands.Guild,
-    new SetGame)
+    helpCommands.Guild,
+    new SetGame,
+    new SetModRole,
+    new CacheDebug)
   )
 
   val privateCommandRegistry = new CommandRegistry[PrivateCommand](Set(
     new RecallCommands.RecallConversationPrivate(),
-    HelpCommands.Private
+    helpCommands.Private
   ))
 
   val sqlWritable: Seq[SQLWritable] = Seq(guildDataManager, conversationTracker)
@@ -68,6 +76,11 @@ object Main extends ListenerAdapter {
     ownerOption = Option(jda.retrieveUserById(config.getString("debuguser").getOrElse("0")).complete())
     jda.addEventListener(new CommandExecutionHandler(ownerOption.get, guildCommandRegistry, privateCommandRegistry))
     jda.addEventListener(paginatedMessageHandler)
+
+    /* register the shutdown hook to catch SIGINT and shutdown gracefully */
+    Runtime.getRuntime.addShutdownHook(new Thread(() => {
+      shutdown(jda)
+    }))
   }
 
   override def onReady(event: ReadyEvent): Unit = {

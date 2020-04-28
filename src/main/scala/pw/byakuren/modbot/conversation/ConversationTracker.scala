@@ -38,6 +38,7 @@ class ConversationTracker(implicit guildDataManager: GuildDataManager, conversat
   override def write(SQLConnection: SQLConnection): Unit = {
     completed.foreach(_.write(SQLConnection))
     completed.clear()
+    conversationCache.convs = Seq()
   }
 
   implicit def completeCallback(conversation: Conversation): Unit = {

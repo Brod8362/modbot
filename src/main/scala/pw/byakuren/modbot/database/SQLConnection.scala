@@ -4,7 +4,7 @@ import java.sql.Date
 import java.util.UUID
 
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.{Guild, TextChannel, User}
+import net.dv8tion.jda.api.entities.{Guild, Role, TextChannel, User}
 import pw.byakuren.modbot.conversation.{Conversation, PreviousConversation}
 import pw.byakuren.modbot.guild.GuildSettings
 import scalikejdbc._
@@ -21,6 +21,7 @@ class SQLConnection {
     PRIMARY KEY(uuid, message_index))""".execute().apply()
   sql"CREATE TABLE IF NOT EXISTS guild_settings (guild INTEGER PRIMARY KEY NOT NULL, bitfield NOT NULL)".execute().apply()
   sql"CREATE TABLE IF NOT EXISTS guild_prefix (guild INTEGER PRIMARY KEY NOT NULL, prefix STRING)".execute().apply()
+  sql"CREATE TABLE IF NOT EXISTS guild_modrole (guild INTEGER PRIMARY KEY NOT NULL, role INTEGER NOT NULL)".execute().apply()
 
   def setGuildLogChannel(channel: TextChannel): Boolean = {
     sql"INSERT OR REPLACE INTO log_channel VALUES (${channel.getGuild.getIdLong}, ${channel.getIdLong})".execute().apply()
@@ -114,5 +115,22 @@ class SQLConnection {
       .map(rs => rs.string("prefix"))
       .single()
       .apply()
+  }
+
+  def writeModeratorRole(server: Guild, mRole: Role): Unit = {
+    sql"""INSERT OR REPLACE INTO guild_modrole VALUES (${server.getIdLong}, ${mRole.getIdLong})"""
+      .execute()
+      .apply()
+  }
+
+  def getModeratorRole(guild: Guild): Option[Role] = {
+    val opt = sql"""SELECT role FROM guild_modrole WHERE guild=${guild.getIdLong}"""
+      .map(rs => rs.long("role"))
+      .single()
+      .apply()
+    opt match {
+      case Some(id) => Option(guild.getRoleById(id))
+      case None => None
+    }
   }
 }

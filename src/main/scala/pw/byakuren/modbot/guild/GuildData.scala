@@ -60,5 +60,7 @@ class GuildData(val server: Guild, val guildSettings: GuildSettings, var logChan
     guildSettings.write(SQLConnection)
     for (customPref <- customPrefix)
       SQLConnection.writeGuildPrefix(server, customPref)
+    for (mRole <- moderatorRole)
+      SQLConnection.writeModeratorRole(server, mRole)
   }
 }
