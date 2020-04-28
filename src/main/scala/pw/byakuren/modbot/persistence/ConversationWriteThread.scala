@@ -11,7 +11,6 @@ class ConversationWriteThread(implicit conversationTracker: ConversationTracker,
     while (loop) {
       Thread.sleep(1000*180)
       conversationTracker.write(sqlConnection)
-      println("wrote some stuff to sql")
     }
   }
 
